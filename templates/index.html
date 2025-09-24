@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metabolomics Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1e3a8a;
+            --primary-dark: #1a2a6b;
+            --secondary-color: #f1f5f9;
+            --secondary-dark: #cbd5e1;
+            --background-color: #e2e8f0;
+            --card-background: #ffffff;
+            --text-color: #334155;
+            --border-color: #e2e8f0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --error-color: #dc2626;
+            --success-color: #16a34a;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 300px;
+            background-color: var(--card-background);
+            padding: 20px;
+            box-shadow: 2px 0 10px var(--shadow-color);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .card {
+            background-color: var(--card-background);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .card h4 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input[type="file"], input[type="text"], input[type="number"], select, button {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        input[type="file"] {
+            background-color: var(--secondary-color);
+            cursor: pointer;
+        }
+        
+        select[multiple] {
+            height: 100px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .secondary-btn {
+            background-color: var(--secondary-dark);
+            color: var(--text-color);
+        }
+
+        .secondary-btn:hover:not(:disabled) {
+            background-color: #94a3b8;
+        }
+        
+        button:disabled {
+            background-color: var(--border-color);
+            color: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .plot-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .plot-card {
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .plot-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .plot-card h5 {
+            margin: 0 0 10px;
+            color: var(--primary-color);
+            font-size: 1em;
+            font-weight: 500;
+        }
+
+        .plot-card img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+
+        #fileInfo, #deResultsContainer {
+            margin-top: 10px;
+            padding: 15px;
+            background-color: #e0f2fe;
+            border: 1px solid #90cdf4;
+            border-radius: 8px;
+            color: #0c4a6e;
+        }
+        
+        #status {
+            margin-top: 10px;
+            font-style: italic;
+            color: #475569;
+        }
+
+        .loading-spinner {
+            border: 4px solid var(--border-color);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border-left-color: var(--primary-color);
+            animation: spin 1s ease infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--secondary-color);
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 16px;
+            position: fixed;
+            z-index: 100;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 30px;
+            font-size: 16px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: visibility 0.3s, opacity 0.3s, transform 0.3s;
+            opacity: 0;
+        }
+
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast.error {
+            background-color: var(--error-color);
+        }
+
+        .toast.success {
+            background-color: var(--success-color);
+        }
+
+        @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
+        @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 0; opacity: 0; } }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <header>
+        <h1>Metabolomics Dashboard</h1>
+    </header>
+
+    <div class="card">
+        <h4><i class="fas fa-cloud-upload-alt"></i> Upload Data</h4>
+        <div class="form-group">
+            <label for="h5adFile">AnnData File (.h5ad)</label>
+            <input type="file" id="h5adFile" accept=".h5ad">
+        </div>
+        <div class="form-group">
+            <label for="activityScoresFile">Activity Scores (.csv) (Optional)</label>
+            <input type="file" id="activityScoresFile" accept=".csv">
+        </div>
+        <div class="form-group">
+            <label for="wStdFile">W_std File (.csv) (Optional)</label>
+            <input type="file" id="wStdFile" accept=".csv">
+        </div>
+        <div class="form-group">
+            <label for="wGraphFile">W_graph File (.csv) (Optional)</label>
+            <input type="file" id="wGraphFile" accept=".csv">
+        </div>
+        <button id="uploadBtn">
+            <i class="fas fa-upload"></i> Upload & Process
+        </button>
+        <div id="status"></div>
+    </div>
+    <div class="card">
+    <h3>Exploratory Plots</h3>
+    <button id="exploratoryBtn">
+        <i class="fas fa-chart-bar"></i> Generate Exploratory Plots
+    </button>
+</div>
+
+
+
+    
+    <div class="card" id="visualizationSection" style="display:none;">
+        <h4><i class="fas fa-chart-area"></i> Visualize Results</h4>
+        <div id="fileInfo"></div>
+        <div class="form-group">
+            <label for="embeddingSelect">Select Embeddings</label>
+            <select id="embeddingSelect" multiple></select>
+        </div>
+        <div class="form-group">
+            <label for="colorBySelect">Color Points by Column</label>
+            <select id="colorBySelect"></select>
+        </div>
+        <button id="visualizeBtn">
+            <i class="fas fa-chart-area"></i> Generate Plots
+        </button>
+    </div>
+
+    <div class="card" id="qcSection" style="display:none;">
+        <h4><i class="fas fa-flask"></i> QC Plots</h4>
+        <button id="qcBtn">
+            <i class="fas fa-chart-line"></i> Generate QC Plots
+        </button>
+    </div>
+
+    <div class="card" id="activitySection" style="display:none;">
+        <h4><i class="fas fa-chart-bar"></i> Activity Score Plots</h4>
+        <div class="form-group">
+            <label for="topNInput">Top N Metabolites</label>
+            <input type="number" id="topNInput" value="10" min="1" max="50">
+        </div>
+        <button id="activityPlotBtn">
+            <i class="fas fa-wave-square"></i> Generate bar Plot
+        </button>
+        <button id="dotPlotBtn" class="secondary-btn">
+            <i class="fas fa-dot-circle"></i> Generate Dot Plot
+        </button>
+    </div>
+
+    <div class="card" id="heatmapSection" style="display:none;">
+        <h4><i class="fas fa-fire"></i> Heatmap</h4>
+        <div class="form-group">
+            <label for="heatmapRowsInput">Number of Metabolites (Rows)</label>
+            <input type="number" id="heatmapRowsInput" value="50" min="1" max="500">
+        </div>
+        <div class="form-group">
+            <label for="heatmapColsInput">Number of Samples (Columns)</label>
+            <input type="number" id="heatmapColsInput" value="50" min="1" max="500">
+        </div>
+        <button id="heatmapBtn">
+            <i class="fas fa-fire"></i> Generate Heatmap
+        </button>
+    </div>
+    
+    <div class="card" id="deSection" style="display:none;">
+        <h4><i class="fas fa-microscope"></i> DE Results</h4>
+        <div class="form-group">
+            <label for="deResultsFile">DE Results (.csv)</label>
+            <input type="file" id="deResultsFile" accept=".csv">
+        </div>
+        <button id="uploadDeBtn">
+            <i class="fas fa-file-upload"></i> Upload DE Results
+        </button>
+        <div style="display:flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+            <button id="viewDeBtn" class="secondary-btn" style="flex:1; display:none;">
+                <i class="fas fa-eye"></i> View Table
+            </button>
+            <button id="downloadCsvBtn" class="secondary-btn" style="flex:1; display:none;">
+                <i class="fas fa-file-csv"></i> Download CSV
+            </button>
+            <button id="downloadPdfBtn" class="secondary-btn" style="flex:1;">
+    <i class="fas fa-file-pdf"></i> Download Project Technologies
+</button>
+
+        </div>
+        <button id="generateReportBtn" style="margin-top: 10px;">
+            <i class="fas fa-file-export"></i> Generate Full PDF Report
+        </button>
+    </div>
+</div>
+
+<div class="main-content">
+    <div id="exploratoryPlotsArea" class="plot-container"></div>
+    <div class="plot-container" id="plotsArea"></div>
+    <div class="plot-container" id="qcPlotsArea"></div>
+    <div class="plot-container" id="activityPlotsArea"></div>
+    <div class="plot-container" id="heatmapPlotsArea"></div>
+    <div id="deResultsContainer" class="hidden"></div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+    const uploadBtn = document.getElementById('uploadBtn');
+    const h5adFile = document.getElementById('h5adFile');
+    const activityScoresFile = document.getElementById('activityScoresFile');
+    const wStdFile = document.getElementById('wStdFile');
+    const wGraphFile = document.getElementById('wGraphFile');
+    const statusDiv = document.getElementById('status');
+    const visualizationSection = document.getElementById('visualizationSection');
+    const qcSection = document.getElementById('qcSection');
+    const activitySection = document.getElementById('activitySection');
+    const heatmapSection = document.getElementById('heatmapSection');
+    const deSection = document.getElementById('deSection');
+    const fileInfoDiv = document.getElementById('fileInfo');
+    const embeddingSelect = document.getElementById('embeddingSelect');
+    const colorBySelect = document.getElementById('colorBySelect');
+    const visualizeBtn = document.getElementById('visualizeBtn');
+    const plotsArea = document.getElementById('plotsArea');
+    const qcBtn = document.getElementById('qcBtn');
+    const qcPlotsArea = document.getElementById('qcPlotsArea');
+    const topNInput = document.getElementById('topNInput');
+    const activityPlotBtn = document.getElementById('activityPlotBtn');
+    const dotPlotBtn = document.getElementById('dotPlotBtn');
+    const activityPlotsArea = document.getElementById('activityPlotsArea');
+    const heatmapBtn = document.getElementById('heatmapBtn');
+    const heatmapRowsInput = document.getElementById('heatmapRowsInput');
+    const heatmapColsInput = document.getElementById('heatmapColsInput');
+    const heatmapPlotsArea = document.getElementById('heatmapPlotsArea');
+    const uploadDeBtn = document.getElementById('uploadDeBtn');
+    const deResultsFile = document.getElementById('deResultsFile');
+    const viewDeBtn = document.getElementById('viewDeBtn');
+    const downloadCsvBtn = document.getElementById('downloadCsvBtn');
+    const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+    const deResultsContainer = document.getElementById('deResultsContainer');
+    const generateReportBtn = document.getElementById('generateReportBtn');
+    const toast = document.getElementById('toast');
+
+    let lastFileId = null;
+    let pollInterval = null;
+
+    function showToast(message, isError = false) {
+        toast.textContent = message;
+        toast.className = `toast show ${isError ? 'error' : 'success'}`;
+        setTimeout(() => {
+            toast.className = toast.className.replace("show", "");
+        }, 3000);
+    }
+
+    function setButtonState(button, isLoading) {
+        if (isLoading) {
+            button.disabled = true;
+            const spinner = document.createElement('div');
+            spinner.className = 'loading-spinner';
+            button.innerHTML = '';
+            button.appendChild(spinner);
+        } else {
+            button.disabled = false;
+            if (button.id === 'uploadBtn') button.innerHTML = '<i class="fas fa-upload"></i> Upload & Process';
+            if (button.id === 'visualizeBtn') button.innerHTML = '<i class="fas fa-chart-area"></i> Generate Plots';
+            if (button.id === 'qcBtn') button.innerHTML = '<i class="fas fa-chart-line"></i> Generate QC Plots';
+            if (button.id === 'activityPlotBtn') button.innerHTML = '<i class="fas fa-wave-square"></i> Generate bar Plot';
+            if (button.id === 'dotPlotBtn') button.innerHTML = '<i class="fas fa-dot-circle"></i> Generate Dot Plot';
+            if (button.id === 'heatmapBtn') button.innerHTML = '<i class="fas fa-fire"></i> Generate Heatmap';
+            if (button.id === 'uploadDeBtn') button.innerHTML = '<i class="fas fa-file-upload"></i> Upload DE Results';
+            if (button.id === 'viewDeBtn') button.innerHTML = '<i class="fas fa-eye"></i> View Table';
+            if (button.id === 'downloadCsvBtn') button.innerHTML = '<i class="fas fa-file-csv"></i> Download CSV';
+            if (button.id === 'downloadPdfBtn') button.innerHTML = '<i class="fas fa-file-pdf"></i> Download Project Technologies';
+            if (button.id === 'generateReportBtn') button.innerHTML = '<i class="fas fa-file-export"></i> Generate Full PDF Report';
+        }
+    }
+
+    function createPlotCard(title, imageUrl) {
+        const card = document.createElement('div');
+        card.className = 'plot-card';
+        card.innerHTML = `
+            <h5>${title}</h5>
+            <img src="${imageUrl}" alt="${title} Plot">
+        `;
+        return card;
+    }
+
+    async function checkStatus(fileId) {
+        try {
+            const res = await fetch(`/check_status/${fileId}`);
+            const data = await res.json();
+            if (data.status === 'done') {
+                clearInterval(pollInterval);
+                showToast("Processing complete!");
+                updateUI(fileId);
+            } else if (data.status.startsWith('error')) {
+                clearInterval(pollInterval);
+                showToast(`Processing failed: ${data.status.split(': ')[1]}`, true);
+                setButtonState(uploadBtn, false);
+                statusDiv.innerHTML = `<p style="color:red;">Error: ${data.status.split(': ')[1]}</p>`;
+            } else {
+                statusDiv.innerHTML = `<p>${data.message}</p>`;
+            }
+        } catch (e) {
+            console.error("Status check failed", e);
+            clearInterval(pollInterval);
+            showToast("Failed to check processing status.", true);
+            setButtonState(uploadBtn, false);
+            statusDiv.innerHTML = `<p style="color:red;">Failed to check processing status.</p>`;
+        }
+    }
+
+    async function updateUI(fileId) {
+        lastFileId = fileId;
+        fileInfoDiv.innerHTML = `<p><strong>Current Project ID:</strong> ${fileId}</p>`;
+        
+        try {
+            const embRes = await fetch(`/get_available_embeddings?file_id=${fileId}`);
+            if (!embRes.ok) throw new Error("Failed to get embeddings.");
+            const embData = await embRes.json();
+            embeddingSelect.innerHTML = '';
+            embData.obsm_keys.forEach(key => {
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = key.replace('X_', '').replace('_', ' ').toUpperCase();
+                embeddingSelect.appendChild(option);
+            });
+        } catch (e) {
+            console.error(e);
+            showToast("Failed to load embeddings.", true);
+        }
+
+        try {
+            const obsRes = await fetch(`/get_obs_columns?file_id=${fileId}`);
+            if (!obsRes.ok) throw new Error("Failed to get obs columns.");
+            const obsData = await obsRes.json();
+            colorBySelect.innerHTML = '<option value="">(None)</option>';
+            obsData.obs_keys.forEach(key => {
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = key;
+                colorBySelect.appendChild(option);
+            });
+        } catch (e) {
+            console.error(e);
+            showToast("Failed to load obs columns.", true);
+        }
+
+        visualizationSection.style.display = 'block';
+        qcSection.style.display = 'block';
+        activitySection.style.display = 'block';
+        heatmapSection.style.display = 'block';
+        deSection.style.display = 'block';
+        setButtonState(uploadBtn, false);
+    }
+
+    async function visualizeData() {
+        if (!lastFileId) { showToast('Please upload a project file first.', true); return; }
+
+        const selectedOptions = Array.from(embeddingSelect.options).filter(opt => opt.selected);
+        const embeddingsList = selectedOptions.map(opt => opt.value);
+        const colorBy = colorBySelect.value;
+        const fd = new FormData();
+        fd.append('file_id', lastFileId);
+        fd.append('embeddings', JSON.stringify(embeddingsList)); 
+        fd.append('color_by', colorBy);
+
+        try {
+            setButtonState(visualizeBtn, true);
+            plotsArea.innerHTML = '';
+            const res = await fetch('/visualize', { method: 'POST', body: fd });
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || `HTTP ${res.status}`);
+            }
+            const result = await res.json();
+            for (const key in result) {
+                if (key.endsWith('_url') && result[key]) {
+                    const plotName = key.replace('_url', '').replace('visualize_', '').replace('x_hstd_', 'HSTD').replace('x_hgraph_', 'HGRAPH').replace('x_', '').replace('_', ' ').toUpperCase();
+                    const fullUrl = window.location.origin + result[key] + '?t=' + Date.now();
+                    plotsArea.appendChild(createPlotCard(plotName, fullUrl));
+                }
+            }
+            if (plotsArea.innerHTML === '') plotsArea.innerHTML = '<p>No plots generated.</p>';
+            showToast("Embeddings visualized successfully!");
+        } catch (e) {
+            console.error(e);
+            plotsArea.innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
+            showToast('Visualization failed: ' + e.message, true);
+        } finally {
+            setButtonState(visualizeBtn, false);
+        }
+    }
+
+    async function uploadDeResults() {
+        if (!lastFileId) { showToast('Please upload a project file first.', true); return; }
+        if (deResultsFile.files.length === 0) { showToast('Please select a file to upload.', true); return; }
+
+        const fd = new FormData();
+        fd.append('file_id', lastFileId);
+        fd.append('de_results_file', deResultsFile.files[0]);
+
+        try {
+            setButtonState(uploadDeBtn, true);
+            const res = await fetch('/upload_de_results', { method: 'POST', body: fd });
+            const data = await res.json();
+            if (res.ok) {
+                showToast(data.message);
+                viewDeBtn.style.display = 'inline-block';
+                downloadCsvBtn.style.display = 'inline-block';
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (e) {
+            console.error(e);
+            showToast('Failed to upload DE results: ' + e.message, true);
+        } finally {
+            setButtonState(uploadDeBtn, false);
+        }
+    }
+async function viewDeResults() {
+    if (!lastFileId) { 
+        showToast('Please upload a project file first.', true); 
+        return; 
+    }
+
+    try {
+        setButtonState(viewDeBtn, true);
+        deResultsContainer.innerHTML = '<div class="loading-spinner"></div>';
+        deResultsContainer.style.display = 'block';
+
+        const res = await fetch(`/get_up_down_players?file_id=${lastFileId}`);
+        if (!res.ok) throw new Error("Failed to fetch DE results.");
+        const result = await res.json();
+
+        // ✅ backend ke hisaab se key
+        const deData = result.up_down_players || [];
+
+        if (deData.length > 0) {
+            // columns aur friendly names wahi rakhe jaise tumne
+            const columns = [ 'p_value', 'log2FC', 'Up/Down','adj_p_value' ];
+            const friendlyNames = {
+                'adj_p_value': 'Adj P-Value',
+                'p_value': 'P-Value',
+                'log2FC': 'Log2 Fold Change',
+                'Up/Down': 'Status',
+            };
+
+            const topRows = deData.slice(0, 6); // top 6 rows UI ke liye
+
+            const tableHtml = `
+                <table>
+                    <thead>
+                        <tr>
+                            ${columns.map(col => `<th>${friendlyNames[col]}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${topRows.map(row => `
+                            <tr>
+                                ${columns.map(col => `<td>${row[col] ?? ''}</td>`).join('')}
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            deResultsContainer.innerHTML = tableHtml;
+        } else {
+            deResultsContainer.innerHTML = '<p>No DE results found or table is empty.</p>';
+        }
+    } catch (e) {
+        console.error(e);
+        deResultsContainer.innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
+        showToast('Failed to view DE results: ' + e.message, true);
+    } finally {
+        setButtonState(viewDeBtn, false);
+    }
+}
+
+async function generatePlot(endpoint, formData, plotArea, plotTitlePrefix) {
+    try {
+        plotArea.innerHTML = '';
+        setButtonState(this, true); // this will be bound in event listener
+        const res = await fetch(endpoint, { method: formData instanceof FormData ? 'POST' : 'GET', body: formData instanceof FormData ? formData : null });
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || `HTTP ${res.status}`);
+        }
+        const result = await res.json();
+        let plotsGenerated = false;
+        for (const key in result) {
+            if (key.endsWith('_url') && result[key]) {
+                const plotName = plotTitlePrefix ? `${plotTitlePrefix} ${key.replace('_url','').replace('_',' ').toUpperCase()}` : key.replace('_url','').replace('_',' ').toUpperCase();
+                const fullUrl = window.location.origin + result[key] + '?t=' + Date.now();
+                plotArea.appendChild(createPlotCard(plotName, fullUrl));
+                plotsGenerated = true;
+            }
+        }
+        if (!plotsGenerated) plotArea.innerHTML = '<p>No plots generated.</p>';
+        showToast(`${plotTitlePrefix || 'Plot'} generated successfully!`);
+    } catch (e) {
+        console.error(e);
+        plotArea.innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
+        showToast(`${plotTitlePrefix || 'Plot'} generation failed: ` + e.message, true);
+    } finally {
+        setButtonState(this, false);
+    }
+}
+
+
+
+
+    async function downloadFile(endpoint, filename, requiresFileId = true) {
+        if (requiresFileId && !lastFileId) {
+            showToast('Please upload a project file first.', true);
+            return;
+        }
+        try {
+            const url = requiresFileId ? `${endpoint}?file_id=${lastFileId}` : endpoint;
+            const res = await fetch(url);
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || `HTTP ${res.status}`);
+            }
+
+            const blob = await res.blob();
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = window.URL.createObjectURL(blob);
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(blob);
+            showToast(`${filename} downloaded successfully!`);
+        } catch (e) {
+            console.error(e);
+            showToast(`Failed to download ${filename}: ` + e.message, true);
+        }
+    }
+
+    // Event Listeners
+    uploadBtn.addEventListener('click', async () => {
+        const h5ad = h5adFile.files[0];
+        const activityScores = activityScoresFile.files[0];
+        const wStd = wStdFile.files[0];
+        const wGraph = wGraphFile.files[0];
+
+        if (!h5ad) {
+            showToast('Please select an H5AD file.', true);
+            return;
+        }
+
+        const fd = new FormData();
+        fd.append('h5ad_file', h5ad);
+        if (activityScores) {
+            fd.append('activity_scores_file', activityScores);
+        }
+        if (wStd) {
+            fd.append('w_std_file', wStd);
+        }
+        if (wGraph) {
+            fd.append('w_graph_file', wGraph);
+        }
+
+        setButtonState(uploadBtn, true);
+        statusDiv.innerHTML = '<p>Uploading and processing started...</p>';
+
+        try {
+            const res = await fetch('/upload_h5ad_and_csvs', {
+                method: 'POST',
+                body: fd,
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showToast(data.message);
+                lastFileId = data.file_id;
+                // Clear previous interval if any
+                if (pollInterval) clearInterval(pollInterval);
+                pollInterval = setInterval(() => checkStatus(data.file_id), 3000);
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (e) {
+            console.error(e);
+            statusDiv.innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
+            showToast('Upload failed: ' + e.message, true);
+            setButtonState(uploadBtn, false);
+        }
+    });
+
+    visualizeBtn.addEventListener('click', visualizeData);
+    uploadDeBtn.addEventListener('click', uploadDeResults);
+    viewDeBtn.addEventListener('click', viewDeResults);
+    downloadCsvBtn.addEventListener('click', () => downloadFile('/download_de_results', `de_results_${lastFileId}.csv`));
+    
+    const downloadTechnologiesBtn = document.getElementById('downloadPdfBtn');
+    downloadTechnologiesBtn.addEventListener('click', () => downloadFile('/download_project_technologies', 'used_technologies.txt', false));
+
+    generateReportBtn.addEventListener('click', () => downloadFile('/generate_full_report_pdf', `full_report_${lastFileId}.pdf`));
+
+    qcBtn.addEventListener('click', async () => {
+        if (!lastFileId) { showToast('Please upload a project file first.', true); return; }
+        try {
+            setButtonState(qcBtn, true);
+            qcPlotsArea.innerHTML = '';
+            const res = await fetch(`/generate_qc_plots?file_id=${lastFileId}`);
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || `HTTP ${res.status}`);
+            }
+            const result = await res.json();
+            for (const key in result) {
+                if (key.endsWith('_url') && result[key]) {
+                    const plotName = key.replace('_url', '').replace('qc_', '').replace('_', ' ').toUpperCase();
+                    const fullUrl = window.location.origin + result[key] + '?t=' + Date.now();
+                    qcPlotsArea.appendChild(createPlotCard(plotName, fullUrl));
+                }
+            }
+            if (qcPlotsArea.innerHTML === '') qcPlotsArea.innerHTML = '<p>No QC plots generated.</p>';
+            showToast("QC plots generated successfully!");
+        } catch (e) {
+            console.error(e);
+            qcPlotsArea.innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
+            showToast('QC plot generation failed: ' + e.message, true);
+        } finally {
+            setButtonState(qcBtn, false);
+        }
+    });
+    
+    activityPlotBtn.addEventListener('click', async () => {
+        if (!lastFileId) { showToast('Please upload a project file first.', true); return; }
+        const topN = topNInput.value;
+        try {
+            setButtonState(activityPlotBtn, true);
+            activityPlotsArea.innerHTML = '';
+            const res = await fetch(`/generate_activity_score_plot?file_id=${lastFileId}&top_n=${topN}`);
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || `HTTP ${res.status}`);
+            }
+            const result = await res.json();
+            if (result.activity_score_plot_url) {
+                const fullUrl = window.location.origin + result.activity_score_plot_url + '?t=' + Date.now();
+                activityPlotsArea.appendChild(createPlotCard("Activity Score bar Plot", fullUrl));
+            } else {
+                activityPlotsArea.innerHTML = '<p>No plot generated.</p>';
+            }
+            showToast("Activity score bar plot generated successfully!");
+        } catch (e) {
+            console.error(e);
+            activityPlotsArea.innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
+            showToast('Activity plot generation failed: ' + e.message, true);
+        } finally {
+            setButtonState(activityPlotBtn, false);
+        }
+    });
+
+    dotPlotBtn.addEventListener('click', async () => {
+        if (!lastFileId) { showToast('Please upload a project file first.', true); return; }
+        const topN = topNInput.value;
+        const fd = new FormData();
+        fd.append('file_id', lastFileId);
+        fd.append('top_n', topN);
+        try {
+            setButtonState(dotPlotBtn, true);
+            activityPlotsArea.innerHTML = '';
+            const res = await fetch(`/generate_dotplot`, {method: 'POST', body: fd});
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || `HTTP ${res.status}`);
+            }
+            const result = await res.json();
+            if (result.dotplot_url) {
+                const fullUrl = window.location.origin + result.dotplot_url + '?t=' + Date.now();
+                activityPlotsArea.appendChild(createPlotCard("Dot Plot", fullUrl));
+            } else {
+                activityPlotsArea.innerHTML = '<p>No plot generated.</p>';
+            }
+            showToast("Dot plot generated successfully!");
+        } catch (e) {
+            console.error(e);
+            activityPlotsArea.innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
+            showToast('Dot plot generation failed: ' + e.message, true);
+        } finally {
+            setButtonState(dotPlotBtn, false);
+        }
+    });
+    const exploratoryBtn = document.getElementById('exploratoryBtn');
+const exploratoryPlotsArea = document.getElementById('exploratoryPlotsArea');
+
+function createPlotCard(title, imgUrl) {
+    const card = document.createElement("div");
+    card.className = "plot-card";
+    card.style.marginBottom = "20px";
+    card.innerHTML = `
+        <h4>${title}</h4>
+        <img src="${imgUrl}" alt="${title}" style="max-width:100%;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.2);margin-top:10px;" />
+    `;
+    return card;
+}
+
+exploratoryBtn.addEventListener('click', async () => {
+    if (!lastFileId) { 
+        alert('Please upload a project file first.'); 
+        return; 
+    }
+
+    try {
+        exploratoryBtn.disabled = true;
+        exploratoryPlotsArea.innerHTML = '<p>Generating plots...</p>';
+
+        const formData = new FormData();
+        formData.append("file_id", lastFileId);
+
+        const res = await fetch("/generate_exploratory_plots", {
+            method: "POST",
+            body: formData
+        });
+
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || `HTTP ${res.status}`);
+        }
+
+        const result = await res.json();
+        exploratoryPlotsArea.innerHTML = '';
+
+        let plotsGenerated = false;
+        for (const key in result) {
+            if (key.endsWith('_url') && result[key]) {
+                const plotName = key.replace('_url','').replace(/_/g,' ').toUpperCase();
+                const fullUrl = window.location.origin + result[key] + '?t=' + Date.now();
+                exploratoryPlotsArea.appendChild(createPlotCard(plotName, fullUrl));
+                plotsGenerated = true;
+            }
+        }
+
+        if (!plotsGenerated) {
+            exploratoryPlotsArea.innerHTML = '<p>No exploratory plots generated.</p>';
+        } else {
+            alert("Exploratory plots generated successfully!");
+        }
+
+    } catch (e) {
+        console.error(e);
+        exploratoryPlotsArea.innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
+        alert('Exploratory plot generation failed: ' + e.message);
+    } finally {
+        exploratoryBtn.disabled = false;
+    }
+});
+
+    heatmapBtn.addEventListener('click', async () => {
+        if (!lastFileId) { showToast('Please upload a project file first.', true); return; }
+        const numRows = heatmapRowsInput.value;
+        const numCols = heatmapColsInput.value;
+        const fd = new FormData();
+        fd.append('file_id', lastFileId);
+        fd.append('num_rows', numRows);
+        fd.append('num_cols', numCols);
+        try {
+            setButtonState(heatmapBtn, true);
+            heatmapPlotsArea.innerHTML = '';
+            const res = await fetch(`/generate_heatmap`, { method: 'POST', body: fd });
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || `HTTP ${res.status}`);
+            }
+            const result = await res.json();
+            if (result.heatmap_url) {
+                const fullUrl = window.location.origin + result.heatmap_url + '?t=' + Date.now();
+                heatmapPlotsArea.appendChild(createPlotCard("Heatmap", fullUrl));
+            } else {
+                heatmapPlotsArea.innerHTML = '<p>No heatmap generated.</p>';
+            }
+            showToast("Heatmap generated successfully!");
+        } catch (e) {
+            console.error(e);
+            heatmapPlotsArea.innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
+            showToast('Heatmap generation failed: ' + e.message, true);
+        } finally {
+            setButtonState(heatmapBtn, false);
+        }
+    });
+    function createPlotCard(title, imageUrl) {
+    const card = document.createElement('div');
+    card.className = 'plot-card';
+
+    // Create img element
+    const img = document.createElement('img');
+    img.src = imageUrl;
+    img.alt = title + " Plot";
+
+    // Create title
+    const h5 = document.createElement('h5');
+    h5.textContent = title;
+
+    // Create download button
+    const downloadBtn = document.createElement('button');
+    downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download';
+    downloadBtn.style.marginTop = '10px';
+    downloadBtn.addEventListener('click', () => {
+        const a = document.createElement('a');
+        a.href = imageUrl;
+        a.download = title.replace(/\s+/g, '_') + '.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    });
+
+    card.appendChild(h5);
+    card.appendChild(img);
+    card.appendChild(downloadBtn);
+
+    return card;
+}
+
+
+</script>
+</body>
+</html>

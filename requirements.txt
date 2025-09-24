@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+jinja2
+numpy
+pandas
+scanpy
+anndata
+python-multipart==0.0.6
+matplotlib==3.8.2
+seaborn
+scikit-learn
+umap-learn
+fpdf
+plotly

@@ -1,0 +1,11 @@
+🔧 Technologies Used in This Project
+-----------------------------------
+• Python 3.10
+• FastAPI
+• HTML5, CSS3, Vanilla JS (frontend)
+• Scanpy & AnnData
+• NumPy, Pandas
+• Matplotlib, Seaborn
+• scikit-learn (PCA)
+• UMAP-learn
+• Jinja2 Templates
