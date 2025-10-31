@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -41,224 +42,242 @@
             flex-direction: column;
             gap: 20px;
         }
+.main-content {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column; /* vertical stacking */
+    gap: 30px;              /* har container ke beech gap */
+}
 
-        .main-content {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
+header {
+    text-align: center;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--border-color);
+    margin-bottom: 20px;
+}
 
-        header {
-            text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 2px solid var(--border-color);
-            margin-bottom: 20px;
-        }
+header h1 {
+    color: var(--primary-color);
+    font-weight: 700;
+    margin: 0;
+}
 
-        header h1 {
-            color: var(--primary-color);
-            font-weight: 700;
-            margin: 0;
-        }
+.card {
+    background-color: var(--card-background);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    border: 1px solid var(--border-color);
+}
 
-        .card {
-            background-color: var(--card-background);
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            padding: 20px;
-            border: 1px solid var(--border-color);
-        }
+.card h4 {
+    margin-top: 0;
+    color: var(--primary-color);
+    font-size: 1.1em;
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+}
 
-        .card h4 {
-            margin-top: 0;
-            color: var(--primary-color);
-            font-size: 1.1em;
-            margin-bottom: 15px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
-        }
+.form-group {
+    margin-bottom: 15px;
+}
 
-        .form-group {
-            margin-bottom: 15px;
-        }
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
 
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
+input[type="file"], input[type="text"], input[type="number"], select, button {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
 
-        input[type="file"], input[type="text"], input[type="number"], select, button {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 14px;
-        }
+input[type="file"] {
+    background-color: var(--secondary-color);
+    cursor: pointer;
+}
 
-        input[type="file"] {
-            background-color: var(--secondary-color);
-            cursor: pointer;
-        }
-        
-        select[multiple] {
-            height: 100px;
-        }
+select[multiple] {
+    height: 100px;
+}
 
-        button {
-            background-color: var(--primary-color);
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.2s;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 12px;
-        }
+button {
+    background-color: var(--primary-color);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+}
 
-        button:hover:not(:disabled) {
-            background-color: var(--primary-dark);
-            transform: translateY(-2px);
-        }
-        
-        .secondary-btn {
-            background-color: var(--secondary-dark);
-            color: var(--text-color);
-        }
+button:hover:not(:disabled) {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+}
 
-        .secondary-btn:hover:not(:disabled) {
-            background-color: #94a3b8;
-        }
-        
-        button:disabled {
-            background-color: var(--border-color);
-            color: #94a3b8;
-            cursor: not-allowed;
-            transform: none;
-        }
+.secondary-btn {
+    background-color: var(--secondary-dark);
+    color: var(--text-color);
+}
 
-        .plot-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
+.secondary-btn:hover:not(:disabled) {
+    background-color: #94a3b8;
+}
 
-        .plot-card {
-            background-color: var(--card-background);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            padding: 15px;
-            text-align: center;
-            transition: transform 0.2s;
-        }
+button:disabled {
+    background-color: var(--border-color);
+    color: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+}
 
-        .plot-card:hover {
-            transform: translateY(-4px);
-        }
+.plot-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+    margin-bottom: 30px;  /* har container ke beech proper gap */
+    clear: both;          /* float overlaps prevent */
+}
 
-        .plot-card h5 {
-            margin: 0 0 10px;
-            color: var(--primary-color);
-            font-size: 1em;
-            font-weight: 500;
-        }
+.table-container,
+#mergedTableContainer,
+#deResultsContainer,
+#fileInfo {
+    width: 100%;
+    max-height: 500px;      /* agar content zyada ho toh scroll */
+    overflow-x: auto;       /* horizontal scroll */
+    overflow-y: auto;       /* vertical scroll */
+    border-radius: 8px;
+    padding: 10px;
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    margin-bottom: 30px;    /* containers ke beech gap */
+    clear: both;
+}
 
-        .plot-card img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 5px;
-        }
+/* Plot card styling */
+.plot-card {
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    padding: 15px;
+    text-align: center;
+    transition: transform 0.2s;
+    margin-bottom: 20px;
+}
 
-        #fileInfo, #deResultsContainer {
-            margin-top: 10px;
-            padding: 15px;
-            background-color: #e0f2fe;
-            border: 1px solid #90cdf4;
-            border-radius: 8px;
-            color: #0c4a6e;
-        }
-        
-        #status {
-            margin-top: 10px;
-            font-style: italic;
-            color: #475569;
-        }
+.plot-card:hover {
+    transform: translateY(-4px);
+}
 
-        .loading-spinner {
-            border: 4px solid var(--border-color);
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            border-left-color: var(--primary-color);
-            animation: spin 1s ease infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+.plot-card h5 {
+    margin: 0 0 10px;
+    color: var(--primary-color);
+    font-size: 1em;
+    font-weight: 500;
+}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            font-size: 14px;
-        }
+.plot-card img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
 
-        th, td {
-            border: 1px solid var(--border-color);
-            padding: 10px;
-            text-align: left;
-        }
+/* Status message */
+#status {
+    margin-top: 15px;
+    font-style: italic;
+    color: #475569;
+}
 
-        th {
-            background-color: var(--secondary-color);
-            font-weight: 500;
-            color: var(--text-color);
-        }
+/* Loading spinner */
+.loading-spinner {
+    border: 4px solid var(--border-color);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border-left-color: var(--primary-color);
+    animation: spin 1s ease infinite;
+}
 
-        .hidden {
-            display: none;
-        }
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 
-        .toast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            border-radius: 8px;
-            padding: 16px;
-            position: fixed;
-            z-index: 100;
-            left: 50%;
-            transform: translateX(-50%);
-            bottom: 30px;
-            font-size: 16px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            transition: visibility 0.3s, opacity 0.3s, transform 0.3s;
-            opacity: 0;
-        }
+/* Tables styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    font-size: 14px;
+}
 
-        .toast.show {
-            visibility: visible;
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
+th, td {
+    border: 1px solid var(--border-color);
+    padding: 10px;
+    text-align: left;
+}
 
-        .toast.error {
-            background-color: var(--error-color);
-        }
+th {
+    background-color: var(--secondary-color);
+    font-weight: 500;
+    color: var(--text-color);
+}
 
-        .toast.success {
-            background-color: var(--success-color);
-        }
+.hidden {
+    display: none;
+}
+
+/* Toast messages */
+.toast {
+    visibility: hidden;
+    min-width: 250px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 8px;
+    padding: 16px;
+    position: fixed;
+    z-index: 100;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 30px;
+    font-size: 16px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: visibility 0.3s, opacity 0.3s, transform 0.3s;
+    opacity: 0;
+}
+
+.toast.show {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.toast.error {
+    background-color: var(--error-color);
+}
+
+.toast.success {
+    background-color: var(--success-color);
+}
+
 
         @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
         @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 0; opacity: 0; } }
@@ -270,36 +289,46 @@
     <header>
         <h1>Metabolomics Dashboard</h1>
     </header>
-
-    <div class="card">
-        <h4><i class="fas fa-cloud-upload-alt"></i> Upload Data</h4>
-        <div class="form-group">
-            <label for="h5adFile">AnnData File (.h5ad)</label>
-            <input type="file" id="h5adFile" accept=".h5ad">
-        </div>
-        <div class="form-group">
-            <label for="activityScoresFile">Activity Scores (.csv) (Optional)</label>
-            <input type="file" id="activityScoresFile" accept=".csv">
-        </div>
-        <div class="form-group">
-            <label for="wStdFile">W_std File (.csv) (Optional)</label>
-            <input type="file" id="wStdFile" accept=".csv">
-        </div>
-        <div class="form-group">
-            <label for="wGraphFile">W_graph File (.csv) (Optional)</label>
-            <input type="file" id="wGraphFile" accept=".csv">
-        </div>
-        <button id="uploadBtn">
-            <i class="fas fa-upload"></i> Upload & Process
-        </button>
-        <div id="status"></div>
+<div class="card">
+    <h4><i class="fas fa-cloud-upload-alt"></i> Upload Data</h4>
+    <div class="form-group">
+        <label for="h5adFile">AnnData File (.h5ad)</label>
+        <input type="file" id="h5adFile" accept=".h5ad">
     </div>
-    <div class="card">
-    <h3>Exploratory Plots</h3>
-    <button id="exploratoryBtn">
-        <i class="fas fa-chart-bar"></i> Generate Exploratory Plots
+    <div class="form-group">
+        <label for="activityScoresFile">Activity Scores (.csv) (Optional)</label>
+        <input type="file" id="activityScoresFile" accept=".csv">
+    </div>
+    <div class="form-group">
+        <label for="wStdFile">W_std File (.csv) (Optional)</label>
+        <input type="file" id="wStdFile" accept=".csv">
+    </div>
+    <div class="form-group">
+        <label for="wGraphFile">W_graph File (.csv) (Optional)</label>
+        <input type="file" id="wGraphFile" accept=".csv">
+    </div>
+    <div class="form-group">
+        <label for="metabolicFile">Metabolic File (.csv) (Optional)</label>
+        <input type="file" id="metabolicFile" accept=".csv">
+    </div>
+    <button id="uploadBtn">
+        <i class="fas fa-upload"></i> Upload & Process
     </button>
+    <div id="status"></div>
 </div>
+
+
+    
+    <div class="card" id="qcSection" style="display:none;">
+        <h4><i class="fas fa-flask"></i> QC Plots</h4>
+        <button id="qcBtn">
+            <i class="fas fa-chart-line"></i> Generate QC Plots
+        </button>
+        <p style="background-color:#ffe0b2; padding:4px 8px; border-radius:5px; display:inline-block; margin-top:5px;">
+        📄 h5ad_file
+    </p>
+    </div>
+    
 
 
 
@@ -318,43 +347,48 @@
         <button id="visualizeBtn">
             <i class="fas fa-chart-area"></i> Generate Plots
         </button>
+        <p style="background-color:#ffe0b2; padding:4px 8px; border-radius:5px; display:inline-block; margin-top:5px;">
+        📄 using h5ad_file
+    </p>
     </div>
 
-    <div class="card" id="qcSection" style="display:none;">
-        <h4><i class="fas fa-flask"></i> QC Plots</h4>
-        <button id="qcBtn">
-            <i class="fas fa-chart-line"></i> Generate QC Plots
-        </button>
+<div class="card" id="activitySection" style="display:none;">
+    <h4><i class="fas fa-chart-bar"></i> Activity Score Plots</h4>
+
+    <!-- Top N Metabolites -->
+    <div class="form-group">
+        <label for="topNInput">Top N Metabolites</label>
+        <input type="number" id="topNInput" value="10" min="1" max="50">
     </div>
 
-    <div class="card" id="activitySection" style="display:none;">
-        <h4><i class="fas fa-chart-bar"></i> Activity Score Plots</h4>
-        <div class="form-group">
-            <label for="topNInput">Top N Metabolites</label>
-            <input type="number" id="topNInput" value="10" min="1" max="50">
-        </div>
-        <button id="activityPlotBtn">
-            <i class="fas fa-wave-square"></i> Generate bar Plot
-        </button>
-        <button id="dotPlotBtn" class="secondary-btn">
-            <i class="fas fa-dot-circle"></i> Generate Dot Plot
-        </button>
-    </div>
+    <div class="form-group">
+    <label for="taskDropdown">Select Tasks (Top 30)</label>
+    <select id="taskDropdown" multiple style="height:150px; overflow-y:auto; width:100%;">
+    </select>
+</div>
 
-    <div class="card" id="heatmapSection" style="display:none;">
-        <h4><i class="fas fa-fire"></i> Heatmap</h4>
-        <div class="form-group">
-            <label for="heatmapRowsInput">Number of Metabolites (Rows)</label>
-            <input type="number" id="heatmapRowsInput" value="50" min="1" max="500">
-        </div>
-        <div class="form-group">
-            <label for="heatmapColsInput">Number of Samples (Columns)</label>
-            <input type="number" id="heatmapColsInput" value="50" min="1" max="500">
-        </div>
-        <button id="heatmapBtn">
-            <i class="fas fa-fire"></i> Generate Heatmap
-        </button>
-    </div>
+
+    <button id="activityPlotBtn" class="btn btn-primary">Generate Bar Plot</button>
+    <button id="dotPlotBtn" class="btn btn-secondary">Generate Dot Plot</button>
+
+    
+</div>
+
+    <div>
+        
+    <label>Rows to show:</label>
+    <input type="number" id="rowCount" value="20" min="1">
+    <label>Columns to show:</label>
+    <input type="number" id="colCount" value="5" min="1">
+    <button id="mergeBtn">Merge CSVs</button>
+    <p style="background-color:#ffe0b2; padding:4px 8px; border-radius:5px; display:inline-block; margin-top:5px;">
+        📄 using metabolic_file + activity_scores_file
+    </p>
+</div>
+
+
+
+
     
     <div class="card" id="deSection" style="display:none;">
         <h4><i class="fas fa-microscope"></i> DE Results</h4>
@@ -372,7 +406,36 @@
             <button id="downloadCsvBtn" class="secondary-btn" style="flex:1; display:none;">
                 <i class="fas fa-file-csv"></i> Download CSV
             </button>
-            <button id="downloadPdfBtn" class="secondary-btn" style="flex:1;">
+       
+
+    
+    <div class="card">
+    <h3>Exploratory Plots</h3>
+    <button id="exploratoryBtn">
+        <i class="fas fa-chart-bar"></i> Generate Exploratory Plots
+    </button>
+    <p style="background-color:#ffe0b2; padding:4px 8px; border-radius:5px; display:inline-block; margin-top:5px;">
+        📄 using activity_scores_file + h5ad_file
+    </p>
+    </div>
+
+
+    <div class="card" id="heatmapSection" style="display:none;">
+        <h4><i class="fas fa-fire"></i> Heatmap</h4>
+        
+        <div class="form-group">
+            <label for="heatmapColsInput">Number of Samples (Columns)</label>
+            <input type="number" id="heatmapColsInput" value="50" min="1" max="500">
+        </div>
+        <button id="heatmapBtn">
+            <i class="fas fa-fire"></i> Generate Heatmap
+        </button>
+        <p style="background-color:#ffe0b2; padding:4px 8px; border-radius:5px; display:inline-block; margin-top:5px;">
+        📄 using activity_scores_file + h5ad_file
+    </p>
+    </div>
+    
+    <button id="downloadPdfBtn" class="secondary-btn" style="flex:1;">
     <i class="fas fa-file-pdf"></i> Download Project Technologies
 </button>
 
@@ -384,12 +447,15 @@
 </div>
 
 <div class="main-content">
-    <div id="exploratoryPlotsArea" class="plot-container"></div>
-    <div class="plot-container" id="plotsArea"></div>
     <div class="plot-container" id="qcPlotsArea"></div>
+    <div class="plot-container" id="plotsArea"></div>
     <div class="plot-container" id="activityPlotsArea"></div>
-    <div class="plot-container" id="heatmapPlotsArea"></div>
+    <div id="exploratoryPlotsArea" class="plot-container"></div>
+    <div id="mergedTableContainer"></div>
     <div id="deResultsContainer" class="hidden"></div>
+    <div class="plot-container" id="heatmapPlotsArea"></div>
+    
+    
 </div>
 
 <div id="toast" class="toast"></div>
@@ -413,9 +479,7 @@
     const plotsArea = document.getElementById('plotsArea');
     const qcBtn = document.getElementById('qcBtn');
     const qcPlotsArea = document.getElementById('qcPlotsArea');
-    const topNInput = document.getElementById('topNInput');
-    const activityPlotBtn = document.getElementById('activityPlotBtn');
-    const dotPlotBtn = document.getElementById('dotPlotBtn');
+    
     const activityPlotsArea = document.getElementById('activityPlotsArea');
     const heatmapBtn = document.getElementById('heatmapBtn');
     const heatmapRowsInput = document.getElementById('heatmapRowsInput');
@@ -606,7 +670,8 @@
         } finally {
             setButtonState(uploadDeBtn, false);
         }
-    }
+       }
+
 async function viewDeResults() {
     if (!lastFileId) { 
         showToast('Please upload a project file first.', true); 
@@ -665,6 +730,7 @@ async function viewDeResults() {
         setButtonState(viewDeBtn, false);
     }
 }
+
 
 async function generatePlot(endpoint, formData, plotArea, plotTitlePrefix) {
     try {
@@ -727,55 +793,61 @@ async function generatePlot(endpoint, formData, plotArea, plotTitlePrefix) {
         }
     }
 
+    
     // Event Listeners
-    uploadBtn.addEventListener('click', async () => {
-        const h5ad = h5adFile.files[0];
-        const activityScores = activityScoresFile.files[0];
-        const wStd = wStdFile.files[0];
-        const wGraph = wGraphFile.files[0];
+uploadBtn.addEventListener('click', async () => {
+    const h5ad = h5adFile.files[0];
+    const activityScores = activityScoresFile.files[0];
+    const wStd = wStdFile.files[0];
+    const wGraph = wGraphFile.files[0];
+    const metabolic = metabolicFile.files[0];   // 🔥 metabolic bhi
 
-        if (!h5ad) {
-            showToast('Please select an H5AD file.', true);
-            return;
-        }
+    if (!h5ad) {
+        showToast('Please select an H5AD file.', true);
+        return;
+    }
 
-        const fd = new FormData();
-        fd.append('h5ad_file', h5ad);
-        if (activityScores) {
-            fd.append('activity_scores_file', activityScores);
-        }
-        if (wStd) {
-            fd.append('w_std_file', wStd);
-        }
-        if (wGraph) {
-            fd.append('w_graph_file', wGraph);
-        }
+    const fd = new FormData();
+    fd.append('h5ad_file', h5ad);
+    if (activityScores) {
+        fd.append('activity_scores_file', activityScores);
+    }
+    if (wStd) {
+        fd.append('w_std_file', wStd);
+    }
+    if (wGraph) {
+        fd.append('w_graph_file', wGraph);
+    }
+    if (metabolic) {
+        fd.append('metabolic_file', metabolic);   // 🔥 add metabolic file
+    }
 
-        setButtonState(uploadBtn, true);
-        statusDiv.innerHTML = '<p>Uploading and processing started...</p>';
+    setButtonState(uploadBtn, true);
+    statusDiv.innerHTML = '<p>Uploading and processing started...</p>';
 
-        try {
-            const res = await fetch('/upload_h5ad_and_csvs', {
-                method: 'POST',
-                body: fd,
-            });
-            const data = await res.json();
-            if (res.ok) {
-                showToast(data.message);
-                lastFileId = data.file_id;
-                // Clear previous interval if any
-                if (pollInterval) clearInterval(pollInterval);
-                pollInterval = setInterval(() => checkStatus(data.file_id), 3000);
-            } else {
-                throw new Error(data.error);
-            }
-        } catch (e) {
-            console.error(e);
-            statusDiv.innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
-            showToast('Upload failed: ' + e.message, true);
-            setButtonState(uploadBtn, false);
+    try {
+        const res = await fetch('/upload_h5ad_and_csvs', {
+            method: 'POST',
+            body: fd,
+        });
+        const data = await res.json();
+        if (res.ok) {
+            showToast(data.message);
+            lastFileId = data.file_id;
+            // Clear previous interval if any
+            if (pollInterval) clearInterval(pollInterval);
+            pollInterval = setInterval(() => checkStatus(data.file_id), 3000);
+        } else {
+            throw new Error(data.error || data.detail || 'Unknown error');
         }
-    });
+    } catch (e) {
+        console.error(e);
+        statusDiv.innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
+        showToast('Upload failed: ' + e.message, true);
+        setButtonState(uploadBtn, false);
+    }
+});
+
 
     visualizeBtn.addEventListener('click', visualizeData);
     uploadDeBtn.addEventListener('click', uploadDeResults);
@@ -815,65 +887,120 @@ async function generatePlot(endpoint, formData, plotArea, plotTitlePrefix) {
             setButtonState(qcBtn, false);
         }
     });
-    
+    const tasks = ['A4GALT','AACS','AADAT','AASS','ABAT','ABCD1','ABCD3','ACAA1','ACAA2','ACACA','ACACB','ACAD10','ACAD11','ACAD8','ACAD9','ACADL','ACADM','ACADS','ACADSB','ACAT1','ACAT2','ACMSD','ACO1','ACO2','ACOX1','ACOX2','ACSBG2','ACSL1','ACSL3','ACSL4','ACSL5','ACSL6','ADH1A','ADH1B','ADH1C'];
+
+document.addEventListener('DOMContentLoaded', () => {
+    const taskDropdown = document.getElementById('taskDropdown');
+    const activityPlotBtn = document.getElementById('activityPlotBtn');
+    const dotPlotBtn = document.getElementById('dotPlotBtn');
+    const activityPlotsArea = document.getElementById('activityPlotsArea');
+    const topNInput = document.getElementById('topNInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+
+    // Dropdown populate
+    tasks.forEach(task => {
+        const option = document.createElement('option');
+        option.value = task;
+        option.text = task;
+        taskDropdown.appendChild(option);
+    });
+
+    // Helper: get selected tasks
+    function getSelectedTasks() {
+        return Array.from(taskDropdown.selectedOptions).map(opt => opt.value);
+    }
+
+    // Upload button click (sirf section dikhao, alert hata do)
+    uploadBtn.addEventListener('click', () => {
+        lastFileId = 'demo_project_001'; // Simulate upload
+        document.getElementById('activitySection').style.display = 'block';
+    });
+
+    // ---- Activity Score Bar Plot ----
     activityPlotBtn.addEventListener('click', async () => {
         if (!lastFileId) { showToast('Please upload a project file first.', true); return; }
+
         const topN = topNInput.value;
+        const selectedTasks = getSelectedTasks();
+
+        const urlParams = new URLSearchParams({ file_id: lastFileId, top_n: topN });
+        if (selectedTasks.length) urlParams.append('tasks', selectedTasks.join(','));
+
         try {
-            setButtonState(activityPlotBtn, true);
-            activityPlotsArea.innerHTML = '';
-            const res = await fetch(`/generate_activity_score_plot?file_id=${lastFileId}&top_n=${topN}`);
+            setButtonState(activityPlotBtn, true); // spinner start
+            const spinner = document.createElement('div');
+            spinner.className = "loading-spinner";
+            activityPlotsArea.appendChild(spinner);
+
+            const res = await fetch(`/generate_activity_score_plot?${urlParams.toString()}`);
             if (!res.ok) {
                 const err = await res.json();
                 throw new Error(err.error || `HTTP ${res.status}`);
             }
             const result = await res.json();
+
+            spinner.remove(); // remove spinner only for this plot
             if (result.activity_score_plot_url) {
                 const fullUrl = window.location.origin + result.activity_score_plot_url + '?t=' + Date.now();
-                activityPlotsArea.appendChild(createPlotCard("Activity Score bar Plot", fullUrl));
+                activityPlotsArea.appendChild(createPlotCard("Activity Score Bar Plot", fullUrl));
+                showToast("Activity score bar plot generated successfully!");
             } else {
-                activityPlotsArea.innerHTML = '<p>No plot generated.</p>';
+                activityPlotsArea.appendChild(document.createTextNode("No bar plot generated."));
             }
-            showToast("Activity score bar plot generated successfully!");
         } catch (e) {
             console.error(e);
-            activityPlotsArea.innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
             showToast('Activity plot generation failed: ' + e.message, true);
         } finally {
-            setButtonState(activityPlotBtn, false);
+            setButtonState(activityPlotBtn, false); // spinner stop
         }
     });
 
+    // ---- Dot Plot ----
     dotPlotBtn.addEventListener('click', async () => {
         if (!lastFileId) { showToast('Please upload a project file first.', true); return; }
+
         const topN = topNInput.value;
+        const selectedTasks = getSelectedTasks();
+
         const fd = new FormData();
         fd.append('file_id', lastFileId);
         fd.append('top_n', topN);
+        if (selectedTasks.length) fd.append('tasks', selectedTasks.join(','));
+
         try {
-            setButtonState(dotPlotBtn, true);
-            activityPlotsArea.innerHTML = '';
-            const res = await fetch(`/generate_dotplot`, {method: 'POST', body: fd});
+            setButtonState(dotPlotBtn, true); // spinner start
+            const spinner = document.createElement('div');
+            spinner.className = "loading-spinner";
+            activityPlotsArea.appendChild(spinner);
+
+            const res = await fetch(`/generate_dotplot`, { method: 'POST', body: fd });
             if (!res.ok) {
                 const err = await res.json();
                 throw new Error(err.error || `HTTP ${res.status}`);
             }
             const result = await res.json();
+
+            spinner.remove(); // remove spinner only for this plot
             if (result.dotplot_url) {
                 const fullUrl = window.location.origin + result.dotplot_url + '?t=' + Date.now();
                 activityPlotsArea.appendChild(createPlotCard("Dot Plot", fullUrl));
+                showToast("Dot plot generated successfully!");
             } else {
-                activityPlotsArea.innerHTML = '<p>No plot generated.</p>';
+                activityPlotsArea.appendChild(document.createTextNode("No dot plot generated."));
             }
-            showToast("Dot plot generated successfully!");
         } catch (e) {
             console.error(e);
-            activityPlotsArea.innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
             showToast('Dot plot generation failed: ' + e.message, true);
         } finally {
-            setButtonState(dotPlotBtn, false);
+            setButtonState(dotPlotBtn, false); // spinner stop
         }
     });
+});
+
+
+  
+
+
     const exploratoryBtn = document.getElementById('exploratoryBtn');
 const exploratoryPlotsArea = document.getElementById('exploratoryPlotsArea');
 
@@ -887,7 +1014,6 @@ function createPlotCard(title, imgUrl) {
     `;
     return card;
 }
-
 exploratoryBtn.addEventListener('click', async () => {
     if (!lastFileId) { 
         alert('Please upload a project file first.'); 
@@ -926,26 +1052,24 @@ exploratoryBtn.addEventListener('click', async () => {
 
         if (!plotsGenerated) {
             exploratoryPlotsArea.innerHTML = '<p>No exploratory plots generated.</p>';
-        } else {
-            alert("Exploratory plots generated successfully!");
         }
 
     } catch (e) {
         console.error(e);
         exploratoryPlotsArea.innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
-        alert('Exploratory plot generation failed: ' + e.message);
     } finally {
         exploratoryBtn.disabled = false;
     }
 });
 
+
     heatmapBtn.addEventListener('click', async () => {
         if (!lastFileId) { showToast('Please upload a project file first.', true); return; }
-        const numRows = heatmapRowsInput.value;
+        
         const numCols = heatmapColsInput.value;
         const fd = new FormData();
         fd.append('file_id', lastFileId);
-        fd.append('num_rows', numRows);
+        
         fd.append('num_cols', numCols);
         try {
             setButtonState(heatmapBtn, true);
@@ -1003,6 +1127,88 @@ exploratoryBtn.addEventListener('click', async () => {
 
     return card;
 }
+const mergeBtn = document.getElementById("mergeBtn");
+const mergedTableContainer = document.getElementById("mergedTableContainer");
+const rowCountInput = document.getElementById("rowCount");
+const colCountInput = document.getElementById("colCount");
+
+// Helper to toggle button state with spinner
+function setMergeBtnState(isLoading) {
+    if (isLoading) {
+        mergeBtn.disabled = true;
+        mergeBtn.innerHTML = `<span class="spinner"></span> Merging...`;
+    } else {
+        mergeBtn.disabled = false;
+        mergeBtn.innerHTML = `Merge CSVs`;
+    }
+}
+
+// Spinner CSS (add in your CSS file or <style> tag)
+/*
+.spinner {
+    border: 3px solid #f3f3f3; 
+    border-top: 3px solid #3498db; 
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+*/
+
+mergeBtn.addEventListener("click", async () => {
+    const rows = parseInt(rowCountInput.value) || 20;
+    const cols = parseInt(colCountInput.value) || 4;
+
+    try {
+        setMergeBtnState(true); // start spinner
+        mergedTableContainer.innerHTML = `<div class="loading-spinner">Loading...</div>`;
+
+        const url = cols ? `/merge_csvs?top_n=${rows}&top_cols=${cols}` : `/merge_csvs?top_n=${rows}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Error: ${res.status}`);
+        const data = await res.json();
+
+        const records = data.merged_data;
+
+        if (!records || !Array.isArray(records) || records.length === 0) {
+            mergedTableContainer.innerHTML = "<p>No data found.</p>";
+            return;
+        }
+
+        // Create table dynamically
+        let table = `<table><tr>`;
+        const columnNames = Object.keys(records[0]);
+        const colsToShow = cols ? columnNames.slice(0, cols) : columnNames;
+        colsToShow.forEach(col => table += `<th>${col}</th>`);
+        table += `</tr>`;
+
+        records.slice(0, rows).forEach(row => {
+            table += `<tr>`;
+            colsToShow.forEach(col => table += `<td>${row[col]}</td>`);
+            table += `</tr>`;
+        });
+        table += `</table>`;
+
+        mergedTableContainer.innerHTML = table;
+
+        // Adjust div height
+        const rowHeight = 30;
+        mergedTableContainer.style.height = `${Math.min(rows * rowHeight + 50, 600)}px`;
+
+    } catch (err) {
+        mergedTableContainer.innerHTML = `<p style="color:red">${err}</p>`;
+    } finally {
+        setMergeBtnState(false); // stop spinner
+    }
+});
 
 
 </script>
