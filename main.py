@@ -59,6 +59,7 @@ processing_status = {}
 
 # ---------------------- Helpers ----------------------
 
+
 def align_index(df: pd.DataFrame, adata: sc.AnnData) -> pd.DataFrame:
     """
     Align CSV DataFrame index to adata.obs_names safely.
@@ -179,6 +180,15 @@ def run_dimensionality_reduction(adata_obj: sc.AnnData) -> None:
         if h_std_data.shape[1] >= 2:
             reducer_std = umap.UMAP(random_state=42)
             adata_obj.obsm['X_hstd_umap'] = reducer_std.fit_transform(h_std_data)
+            
+def find_latest_folder_with_files():
+    folders = [f for f in os.listdir(UPLOAD_FOLDER) if os.path.isdir(os.path.join(UPLOAD_FOLDER, f))]
+    if not folders:
+        return None
+    folders.sort(key=lambda x: os.path.getmtime(os.path.join(UPLOAD_FOLDER, x)), reverse=True)
+    return folders[0]
+
+        
 
 def plot_embedding(
     adata_obj: sc.AnnData,
@@ -268,33 +278,35 @@ def process_full_data(file_id: str):
         print(f"Error in process_full_data: {e}")
         traceback.print_exc()
 
-def generate_full_report(file_id: str, pdf_path: str):
-    """
-    Generates a full PDF report with plots, DE results, and project info.
-    """
-    pdf = FPDF()
+def generate_full_report(file_id: str, pdf_path: str, top_n: int = 50, top_cols: list | None = None):
+    from fpdf import FPDF
+    import os, json
+    import pandas as pd
+    from glob import glob
+
+    # Landscape mode for wide tables
+    pdf = FPDF(orientation='L')
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
-    
-    # Title
+
+    # ===== Page 1: Project Summary =====
     pdf.set_font("Arial", "B", 16)
     pdf.cell(0, 10, f"Project Full Report: {file_id}", ln=True, align="C")
     pdf.ln(10)
-    
-    # Section 1: Project Info
     pdf.set_font("Arial", "B", 14)
     pdf.cell(0, 10, "Project Summary", ln=True)
     pdf.set_font("Arial", "", 12)
     pdf.multi_cell(0, 8, f"This report contains full results for project ID: {file_id}.")
     pdf.ln(5)
-    
-    # Section 2: Plots
+
+    # ===== Page 2: Plots =====
+    pdf.add_page()
     pdf.set_font("Arial", "B", 14)
     pdf.cell(0, 10, "Generated Plots", ln=True)
     plot_files = sorted(glob(os.path.join(PLOT_FOLDER, f"*{file_id}*.png")))
     if plot_files:
         for plot_path in plot_files:
-            plot_name = os.path.basename(plot_path).replace("_", " ").replace(".png","").title()
+            plot_name = os.path.basename(plot_path).replace("_", " ").replace(".png", "").title()
             pdf.set_font("Arial", "B", 12)
             pdf.cell(0, 8, plot_name, ln=True)
             pdf.image(plot_path, w=180)
@@ -302,33 +314,28 @@ def generate_full_report(file_id: str, pdf_path: str):
     else:
         pdf.set_font("Arial", "", 12)
         pdf.cell(0, 8, "No plots generated for this project.", ln=True)
-        
-    # Section 3: DE Results Table
+
+    # ===== Page 3: DE Results =====
     pdf.add_page()
     pdf.set_font("Arial", "B", 14)
     pdf.cell(0, 10, "DE Results", ln=True)
-    
     try:
         adata = _load_adata_safe(file_id)
         if 'up_down_table' in adata.uns:
             de_data = json.loads(adata.uns['up_down_table'])
-            pdf.set_font("Arial", "", 10)
-            
-            # Column headers
             if de_data:
                 headers = list(de_data[0].keys())
-                col_width = pdf.w / (len(headers) + 1)
-                
+                col_width = min(50, pdf.w / (len(headers)+1))  # dynamic width
                 pdf.set_font("Arial", "B", 10)
                 for header in headers:
                     pdf.cell(col_width, 10, header, border=1, align="C")
                 pdf.ln()
-
-                # Table data
                 pdf.set_font("Arial", "", 8)
-                for row in de_data[:50]: # First 50 rows
+                for row in de_data[:50]:
                     for header in headers:
                         value = str(row.get(header, ""))
+                        if len(value) > 30:
+                            value = value[:27] + "..."
                         pdf.cell(col_width, 8, value, border=1)
                     pdf.ln()
                 if len(de_data) > 50:
@@ -338,9 +345,52 @@ def generate_full_report(file_id: str, pdf_path: str):
     except Exception as e:
         pdf.set_font("Arial", "", 12)
         pdf.cell(0, 8, f"Error loading DE results: {str(e)}", ln=True)
-    
-    os.makedirs(os.path.dirname(pdf_path), exist_ok=True)
+        print(f"[DEBUG] DE Results error: {e}")
+
+    # ===== Page 4: Merged CSV Table (UI snapshot) =====
+    pdf.add_page()
+    pdf.set_font("Arial", "B", 14)
+    pdf.cell(0, 10, "Merged CSV Table (UI view)", ln=True)
+    try:
+        merged_csv_path = os.path.join(REPORTS_FOLDER, f"{file_id}_merged.csv")
+
+        if os.path.exists(merged_csv_path):
+            df_merged = pd.read_csv(merged_csv_path)
+        else:
+            df_merged = pd.DataFrame()
+
+        if not df_merged.empty:
+            headers = list(df_merged.columns)
+            col_width = min(50, pdf.w / (len(headers)+1))  # dynamic width
+            pdf.set_font("Arial", "B", 10)
+            for h in headers:
+                pdf.cell(col_width, 10, h, border=1, align="C")
+            pdf.ln()
+            pdf.set_font("Arial", "", 8)
+            for _, row in df_merged.iterrows():
+                for h in headers:
+                    value = str(row[h])
+                    if len(value) > 30:
+                        value = value[:27] + "..."
+                    pdf.cell(col_width, 8, value, border=1)
+                pdf.ln()
+        else:
+            pdf.set_font("Arial", "", 12)
+            pdf.cell(0, 8, "No merged CSV snapshot available.", ln=True)
+
+    except Exception as e:
+        pdf.set_font("Arial", "", 12)
+        pdf.cell(0, 8, f"Error loading merged CSV: {str(e)}", ln=True)
+        print(f"[DEBUG] merged CSV error: {e}")
+
+    # ===== Save PDF =====
+    dir_path = os.path.dirname(pdf_path)
+    if dir_path:
+        os.makedirs(dir_path, exist_ok=True)
     pdf.output(pdf_path)
+    print(f"[INFO] Full report generated at: {pdf_path}")
+
+
 
 
 # ---------------------- Routes ----------------------
@@ -359,16 +409,18 @@ async def list_uploads():
         if os.path.isdir(d):
             ids.append({"file_id": os.path.basename(d), "modified": os.path.getmtime(d)})
     return {"uploads": ids}
+
 @app.post("/upload_h5ad_and_csvs")
 async def upload_h5ad_and_csvs(
     background_tasks: BackgroundTasks,
     h5ad_file: UploadFile = File(...),
     w_std_file: Optional[UploadFile] = File(None),
     w_graph_file: Optional[UploadFile] = File(None),
-    activity_scores_file: Optional[UploadFile] = File(None)
+    activity_scores_file: Optional[UploadFile] = File(None),
+    metabolic_file: Optional[UploadFile] = File(None)   # 🔥 new param
 ):
     """
-    Upload H5AD + W_std + W_graph + activity_scores CSVs, save, and start background processing.
+    Upload H5AD + W_std + W_graph + activity_scores + Metabolic CSVs
     """
     file_id = str(uuid.uuid4())
     folder = os.path.join(UPLOAD_FOLDER, file_id)
@@ -413,6 +465,16 @@ async def upload_h5ad_and_csvs(
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to save activity_scores CSV: {str(e)}")
 
+    # Save metabolic CSV  🔥
+    if metabolic_file:
+        metabolic_path = os.path.join(folder, "metabolic.csv")
+        try:
+            with open(metabolic_path, "wb") as f:
+                while chunk := await metabolic_file.read(8192):
+                    f.write(chunk)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to save metabolic CSV: {str(e)}")
+
     # Start background processing
     processing_status[file_id] = "processing"
     background_tasks.add_task(process_full_data, file_id)
@@ -422,16 +484,168 @@ async def upload_h5ad_and_csvs(
         "status": "processing_started",
         "message": "All files uploaded and processing started in the background."
     }
+@app.post("/upload_h5ad_and_csvs")
+async def upload_h5ad_and_csvs(
+    background_tasks: BackgroundTasks,
+    h5ad_file: UploadFile = File(...),
+    w_std_file: Optional[UploadFile] = File(None),
+    w_graph_file: Optional[UploadFile] = File(None),
+    activity_scores_file: Optional[UploadFile] = File(None),
+    metabolic_file: Optional[UploadFile] = File(None)   # 🔥 new param
+):
+    """
+    Upload H5AD + W_std + W_graph + activity_scores + Metabolic CSVs
+    """
+    file_id = str(uuid.uuid4())
+    folder = os.path.join(UPLOAD_FOLDER, file_id)
+    os.makedirs(folder, exist_ok=True)
 
+    # Save H5AD file
+    h5ad_path = os.path.join(folder, "processed.h5ad")
+    try:
+        with open(h5ad_path, "wb") as f:
+            while chunk := await h5ad_file.read(8192):
+                f.write(chunk)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save H5AD file: {str(e)}")
+
+    # Save W_std CSV
+    if w_std_file:
+        w_std_path = os.path.join(folder, "W_std.csv")
+        try:
+            with open(w_std_path, "wb") as f:
+                while chunk := await w_std_file.read(8192):
+                    f.write(chunk)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to save W_std CSV: {str(e)}")
+
+    # Save W_graph CSV
+    if w_graph_file:
+        w_graph_path = os.path.join(folder, "W_graph.csv")
+        try:
+            with open(w_graph_path, "wb") as f:
+                while chunk := await w_graph_file.read(8192):
+                    f.write(chunk)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to save W_graph CSV: {str(e)}")
+
+    # Save activity_scores CSV
+    if activity_scores_file:
+        activity_scores_path = os.path.join(folder, "activity_scores.csv")
+        try:
+            with open(activity_scores_path, "wb") as f:
+                while chunk := await activity_scores_file.read(8192):
+                    f.write(chunk)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to save activity_scores CSV: {str(e)}")
+
+    # Save metabolic CSV  🔥
+    if metabolic_file:
+        metabolic_path = os.path.join(folder, "metabolic.csv")
+        try:
+            with open(metabolic_path, "wb") as f:
+                while chunk := await metabolic_file.read(8192):
+                    f.write(chunk)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to save metabolic CSV: {str(e)}")
+
+    # Start background processing
+    processing_status[file_id] = "processing"
+    background_tasks.add_task(process_full_data, file_id)
+
+    return {
+        "file_id": file_id,
+        "status": "processing_started",
+        "message": "All files uploaded and processing started in the background."
+    }
+@app.post("/upload_h5ad_and_csvs")
+async def upload_h5ad_and_csvs(
+    background_tasks: BackgroundTasks,
+    h5ad_file: UploadFile = File(...),
+    w_std_file: Optional[UploadFile] = File(None),
+    w_graph_file: Optional[UploadFile] = File(None),
+    activity_scores_file: Optional[UploadFile] = File(None),
+    metabolic_file: Optional[UploadFile] = File(None)   # 🔥 new param
+):
+    """
+    Upload H5AD + W_std + W_graph + activity_scores + Metabolic CSVs
+    """
+    file_id = str(uuid.uuid4())
+    folder = os.path.join(UPLOAD_FOLDER, file_id)
+    os.makedirs(folder, exist_ok=True)
+
+    # Save H5AD file
+    h5ad_path = os.path.join(folder, "processed.h5ad")
+    try:
+        with open(h5ad_path, "wb") as f:
+            while chunk := await h5ad_file.read(8192):
+                f.write(chunk)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save H5AD file: {str(e)}")
+
+    # Save W_std CSV
+    if w_std_file:
+        w_std_path = os.path.join(folder, "W_std.csv")
+        try:
+            with open(w_std_path, "wb") as f:
+                while chunk := await w_std_file.read(8192):
+                    f.write(chunk)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to save W_std CSV: {str(e)}")
+
+    # Save W_graph CSV
+    if w_graph_file:
+        w_graph_path = os.path.join(folder, "W_graph.csv")
+        try:
+            with open(w_graph_path, "wb") as f:
+                while chunk := await w_graph_file.read(8192):
+                    f.write(chunk)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to save W_graph CSV: {str(e)}")
+
+    # Save activity_scores CSV
+    if activity_scores_file:
+        activity_scores_path = os.path.join(folder, "activity_scores.csv")
+        try:
+            with open(activity_scores_path, "wb") as f:
+                while chunk := await activity_scores_file.read(8192):
+                    f.write(chunk)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to save activity_scores CSV: {str(e)}")
+
+    # Save metabolic CSV  🔥
+    if metabolic_file:
+        metabolic_path = os.path.join(folder, "metabolic.csv")
+        try:
+            with open(metabolic_path, "wb") as f:
+                while chunk := await metabolic_file.read(8192):
+                    f.write(chunk)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to save metabolic CSV: {str(e)}")
+
+    # Start background processing
+    processing_status[file_id] = "processing"
+    background_tasks.add_task(process_full_data, file_id)
+
+    return {
+        "file_id": file_id,
+        "status": "processing_started",
+        "message": "All files uploaded and processing started in the background."
+    }
 @app.get("/check_status/{file_id}")
 async def check_status(file_id: str):
     """Check if full processing is done"""
     status = processing_status.get(file_id, "not_found")
-    return {"file_id": file_id, "status": status, "message": f"Status: {status}"}
+    return {
+        "file_id": file_id,
+        "status": status,
+        "message": f"Current status: {status}"
+    }
 
 
 
 from fastapi import Query, Request, HTTPException
+
 # ----------------- Settings -----------------
 FIXED_OBS_COLS = ['patient_id', 'cellType', 'cohort']  # Important columns only
 MAX_CELLS_PER_GROUP = 200  # Limit cells per group for speed
@@ -443,14 +657,21 @@ def combine_obs_columns(adata: sc.AnnData, cols: list, df_index: pd.Index):
     metadata["combined_group"] = metadata.apply(lambda x: "_".join([s[:3] for s in x]), axis=1)
     return metadata
 
+
 # ----------------- Activity Score Barplot -----------------
 @app.get("/generate_activity_score_plot")
 @app.post("/generate_activity_score_plot")
-async def generate_activity_score_plot(request: Request, file_id: str = Query(None), top_n: int = Query(10)):
+async def generate_activity_score_plot(
+    request: Request, 
+    file_id: str = Query(None), 
+    top_n: int = Query(10), 
+    tasks: str = Query(None)  # comma-separated tasks from dropdown
+):
     if request.method == "POST" and (not file_id or file_id == "null"):
         form = await request.form()
         file_id = form.get("file_id")
         top_n = int(form.get("top_n", 10))
+        tasks = form.get("tasks")
 
     if not file_id:
         raise HTTPException(status_code=400, detail="file_id is required")
@@ -467,7 +688,7 @@ async def generate_activity_score_plot(request: Request, file_id: str = Query(No
 
         metadata = combine_obs_columns(adata, FIXED_OBS_COLS, df.index)
 
-        # Sample cells per group to limit size
+        # Sample cells per group
         sampled_idx = []
         for grp, sub in df.groupby(metadata["combined_group"]):
             if len(sub) > MAX_CELLS_PER_GROUP:
@@ -478,8 +699,16 @@ async def generate_activity_score_plot(request: Request, file_id: str = Query(No
         metadata = metadata.loc[sampled_idx]
 
         df_clustered = df.groupby(metadata["combined_group"]).mean()
-        top_activities = df_clustered.var(axis=0).sort_values(ascending=False).head(top_n).index
-        df_top = df_clustered[top_activities]
+
+        # Filter selected tasks if provided
+        if tasks:
+            selected_tasks = [t.strip() for t in tasks.split(",") if t.strip() in df_clustered.columns]
+            if not selected_tasks:
+                raise HTTPException(status_code=400, detail="No valid tasks selected")
+            df_top = df_clustered[selected_tasks]
+        else:
+            top_activities = df_clustered.var(axis=0).sort_values(ascending=False).head(top_n).index
+            df_top = df_clustered[top_activities]
 
         plt.figure(figsize=(12, 6))
         df_top.T.plot(kind="bar", figsize=(12, 6))
@@ -500,14 +729,21 @@ async def generate_activity_score_plot(request: Request, file_id: str = Query(No
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
 # ----------------- Dotplot -----------------
 @app.get("/generate_dotplot")
 @app.post("/generate_dotplot")
-async def generate_dotplot(request: Request, file_id: str = Query(None), top_n: int = Query(10)):
+async def generate_dotplot(
+    request: Request, 
+    file_id: str = Query(None), 
+    top_n: int = Query(10), 
+    tasks: str = Query(None)  # comma-separated tasks
+):
     if request.method == "POST" and (not file_id or file_id == "null"):
         form = await request.form()
         file_id = form.get("file_id")
         top_n = int(form.get("top_n", 10))
+        tasks = form.get("tasks")
 
     if not file_id:
         raise HTTPException(status_code=400, detail="file_id is required")
@@ -535,7 +771,14 @@ async def generate_dotplot(request: Request, file_id: str = Query(None), top_n: 
         metadata = metadata.loc[sampled_idx]
 
         df_clustered = df.groupby(metadata["combined_group"])
-        top_activities = df_clustered.mean().var(axis=0).sort_values(ascending=False).head(top_n).index
+
+        # Determine top activities
+        if tasks:
+            top_activities = [t.strip() for t in tasks.split(",") if t.strip() in df.columns]
+            if not top_activities:
+                raise HTTPException(status_code=400, detail="No valid tasks selected")
+        else:
+            top_activities = df_clustered.mean().var(axis=0).sort_values(ascending=False).head(top_n).index
 
         plot_data = []
         for grp, sub in df_clustered:
@@ -575,6 +818,66 @@ async def generate_dotplot(request: Request, file_id: str = Query(None), top_n: 
         print("🔥 Dotplot failed:")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
+# ----------------- Merge CSVs -----------------
+@app.get("/merge_csvs")
+async def merge_csvs(top_n: int = Query(40), top_cols: int = Query(None)):
+    folder = find_latest_folder_with_files()
+    if not folder:
+        return JSONResponse(content={"error": "No folder with files found"}, status_code=404)
+
+    folder_path = os.path.join(UPLOAD_FOLDER, folder)
+    metabolic_file = os.path.join(folder_path, "metabolic.csv")
+    activity_file = os.path.join(folder_path, "activity_scores.csv")
+
+    if not os.path.exists(metabolic_file) or not os.path.exists(activity_file):
+        return JSONResponse(content={"error": "Required CSV files not found"}, status_code=404)
+ 
+    try:
+        # Read CSVs in chunks for large files
+        df_met = pd.concat(pd.read_csv(metabolic_file, chunksize=100000), ignore_index=True)
+        df_act = pd.concat(pd.read_csv(activity_file, chunksize=100000), ignore_index=True)
+
+        # Transpose activity values so rows = metabolic pathways
+        df_act_t = pd.DataFrame(df_act.values.T)
+
+        # Align rows
+        min_rows = min(len(df_met), len(df_act_t))
+        df_met = df_met.iloc[:min_rows]
+        df_act_t = df_act_t.iloc[:min_rows]
+
+        # Rename activity columns (optional, numeric to meaningful)
+        df_act_t.columns = [f"Activity_{i+1}" for i in range(df_act_t.shape[1])]
+
+        # Insert Metabolic column first
+        metabolic_col = df_met.iloc[:, 0]  # first column from metabolic file
+        df_final = df_act_t.copy()
+        df_final.insert(0, "Metabolic", metabolic_col)
+
+        # Optional: limit columns while keeping Metabolic first
+        if top_cols:
+            cols_ordered = ["Metabolic"] + [c for c in df_final.columns if c != "Metabolic"]
+            df_final = df_final[cols_ordered[:top_cols]]
+
+        # Top N rows
+        df_final = df_final.head(top_n)
+
+        # Replace NaN/Inf with empty string
+        df_final.replace([float('inf'), float('-inf')], pd.NA, inplace=True)
+        df_final.fillna("", inplace=True)
+
+        # ================== ✅ Save snapshot CSV for PDF ==================
+        save_path = os.path.join(REPORTS_FOLDER, f"{folder}_merged.csv")
+        df_final.to_csv(save_path, index=False)
+
+        # Convert to JSON for response
+        result = df_final.to_dict(orient='records')
+        return JSONResponse(content={"merged_data": result, "saved_csv": save_path})
+
+    except Exception as e:
+        return JSONResponse(content={"error": f"Error during merge: {str(e)}"}, status_code=500)
+
+    
 @app.get("/generate_qc_plots")
 async def generate_qc_plots(file_id: str, palette: str = "Categorical"):
     try:
@@ -1113,21 +1416,19 @@ async def download_de_results(file_id: str):
 
 @app.get("/generate_full_report_pdf")
 def generate_full_report_pdf(file_id: str):
-    """
-    Generate PDF including:
-    - All plots
-    - DE results (top 6 rows, curated columns like UI)
-    """
     pdf_path = os.path.join(REPORTS_FOLDER, f"full_report_{file_id}.pdf")
     
-    # Generate PDF if not exists
-    if not os.path.exists(pdf_path):
-        try:
-            generate_full_report(file_id, pdf_path)
-        except FileNotFoundError:
-            raise HTTPException(status_code=404, detail=f"Project data not found for ID: {file_id}")
-        except Exception as e:
-            traceback.print_exc()
-            raise HTTPException(status_code=500, detail=f"Failed to generate PDF: {str(e)}")
+    try:
+        # Always generate latest PDF
+        generate_full_report(file_id, pdf_path)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Project data not found for ID: {file_id}")
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Failed to generate PDF: {str(e)}")
     
-    return FileResponse(pdf_path, media_type='application/pdf', filename=f"full_report_{file_id}.pdf")
+    return FileResponse(
+        pdf_path,   
+        media_type='application/pdf',
+        filename=f"full_report_{file_id}.pdf"
+    )
